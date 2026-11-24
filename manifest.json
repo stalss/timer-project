@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "id": "larper.pomodoro",
+  "name": "Pomodoro",
+  "version": "1.1.0",
+  "author": "larper",
+  "description": "Pomodoro focus timer with a settings panel and a site-blocker reward",
+  "kinds": [
+    "bar-widget"
+  ],
+  "entryPoints": {
+    "barWidget": "Pomodoro.qml"
+  },
+  "barWidget": {
+    "displayName": "Pomodoro",
+    "description": "Focus/break timer with 25/5/15 minute phases; right-click to configure",
+    "category": "Time",
+    "allowMultiple": false
+  }
+}

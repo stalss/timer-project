@@ -148,7 +148,7 @@ BarWidget {
   readonly property bool unblocked: unblockedUntil > nowMs
   readonly property string unblockedRemainingText: formatClock(Math.max(0, unblockedUntil - nowMs))
   // Daily screen-time limiter state, written by ~/.local/bin/daily-screen-limit.
-  readonly property string screenLimitStatePath: "/home/larper/.local/state/omarchy/daily-screen-limit.json"
+  readonly property string screenLimitStatePath: (Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state")) + "/omarchy/daily-screen-limit.json"
   property double screenUsedSeconds: 0
   readonly property string screenUsedText: {
     var mins = Math.floor(screenUsedSeconds / 60)

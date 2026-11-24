@@ -85,11 +85,11 @@ sudo -n /usr/local/bin/site-blocker resume
 So `site-blocker` must be installed, and your user needs a sudoers rule like:
 
 ```
-larper ALL=(root) NOPASSWD: /usr/local/bin/site-blocker pause *, /usr/local/bin/site-blocker resume
+<your-username> ALL=(root) NOPASSWD: /usr/local/bin/site-blocker pause *, /usr/local/bin/site-blocker resume
 ```
 
-(Adjust the username and path for your system. Never edit sudoers with a
-plain text editor — use `visudo`.)
+(Replace `<your-username>` with your actual user name and adjust paths for
+your system. Never edit sudoers with a plain text editor — use `visudo`.)
 
 The widget reads `/var/lib/site-blocker/pause.json` to display the live
 countdown of the restriction-free window. Without site-blocker, the timer and
@@ -103,9 +103,14 @@ The panel displays time used today, read from:
 ~/.local/state/omarchy/daily-screen-limit.json
 ```
 
-That file is written by the `daily-screen-limit` service. To install it, save
-the limiter script as `~/.local/bin/daily-screen-limit` (make it executable),
-then add these two user units:
+That file is written by the `daily-screen-limit` service. To install it, copy
+the included script and make it executable:
+
+```bash
+install -m 755 daily-screen-limit ~/.local/bin/daily-screen-limit
+```
+
+Then add these two user units:
 
 **`~/.config/systemd/user/daily-screen-limit.service`**
 
@@ -187,9 +192,12 @@ Bounds are enforced both in the UI (slider ranges) and in code
 
 ## Notes
 
-- `Pomodoro.qml` contains a few absolute paths for this machine
-  (`/home/larper/...`, `/usr/local/bin/site-blocker`,
-  `/var/lib/site-blocker/pause.json`). If your username or install paths
-  differ, edit those lines before installing.
+- `Pomodoro.qml` uses `Quickshell.env("HOME")` (with `XDG_STATE_HOME`
+  override) to find the daily screen-time state file, so it works for any
+  user. The site-blocker paths (`/usr/local/bin/site-blocker`,
+  `/var/lib/site-blocker/pause.json`) are system-wide and only matter if you
+  use the optional reward feature.
+- `larper.pomodoro` is the plugin's module ID (a namespace), not a user
+  account. Leave it as-is when installing.
 - After changing QML files, run `omarchy restart shell` — a plugin hot-reload
   alone may not refresh the active widget code.

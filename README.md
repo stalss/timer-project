@@ -199,5 +199,10 @@ Bounds are enforced both in the UI (slider ranges) and in code
   use the optional reward feature.
 - `larper.pomodoro` is the plugin's module ID (a namespace), not a user
   account. Leave it as-is when installing.
+- On a multi-monitor setup, each bar has its own widget instance and the IPC
+  target is claimed by one of them. `omarchy-shell larper.pomodoro <cmd>`
+  therefore controls whichever instance registered first; the daily session
+  count stays shared via `pomodoro.json`, but timer phase/remaining time are
+  per-instance. Clicking the widget on the bar you want avoids this.
 - After changing QML files, run `omarchy restart shell` — a plugin hot-reload
   alone may not refresh the active widget code.

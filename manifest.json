@@ -13,7 +13,7 @@
   },
   "barWidget": {
     "displayName": "Pomodoro",
-    "description": "Focus/break timer with 25/5/15 minute phases; right-click to configure",
+    "description": "Focus/break timer with configurable phases (focus min 30 min, breaks max 15 min); right-click to configure",
     "category": "Time",
     "allowMultiple": false
   }

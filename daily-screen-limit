@@ -19,8 +19,10 @@ import time
 from pathlib import Path
 
 HOME = Path.home()
-SHELL_CONFIG = HOME / ".config/omarchy/shell.json"
-STATE_FILE = HOME / ".local/state/omarchy/daily-screen-limit.json"
+CONFIG_HOME = Path(os.environ.get("XDG_CONFIG_HOME") or HOME / ".config")
+STATE_HOME = Path(os.environ.get("XDG_STATE_HOME") or HOME / ".local/state")
+SHELL_CONFIG = CONFIG_HOME / "omarchy/shell.json"
+STATE_FILE = STATE_HOME / "omarchy/daily-screen-limit.json"
 DEFAULT_MINUTES = 180
 MIN_MINUTES = 5
 MAX_MINUTES = 360
@@ -114,11 +116,12 @@ def load_state() -> dict:
         data = {}
     if not isinstance(data, dict) or data.get("date") != today():
         return {"date": today(), "seconds": 0, "warned": False, "last": int(time.time())}
+    last = data.get("last")
     return {
         "date": today(),
         "seconds": max(0, int(data.get("seconds", 0) or 0)),
         "warned": bool(data.get("warned", False)),
-        "last": data.get("last"),
+        "last": last if isinstance(last, (int, float)) else int(time.time()),
     }
 
 

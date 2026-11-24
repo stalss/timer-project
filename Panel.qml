@@ -32,7 +32,7 @@ Panel {
 
   // Timer settings and live state, read off the host widget so the clamping
   // and defaults live in exactly one place.
-  readonly property int workMinutes: hostWidget ? hostWidget.workMinutes : 25
+  readonly property int workMinutes: hostWidget ? hostWidget.workMinutes : 30
   readonly property int breakMinutes: hostWidget ? hostWidget.breakMinutes : 5
   readonly property int longBreakMinutes: hostWidget ? hostWidget.longBreakMinutes : 15
   readonly property int sessionsBeforeLong: hostWidget ? hostWidget.sessionsBeforeLong : 4
@@ -82,7 +82,7 @@ Panel {
     stdout: StdioCollector { waitForEnd: true }
     stderr: StdioCollector { waitForEnd: true }
     onExited: function(code, status) {
-      if (code !== 0)
+      if (code !== 0 && root.hostWidget)
         root.hostWidget.notify("Could not restore blocking",
           "site-blocker resume failed (exit " + code + ").")
     }

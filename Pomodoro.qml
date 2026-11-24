@@ -254,6 +254,7 @@ BarWidget {
     entry.workMinutes = Math.max(30, Math.round(Number(entry.workMinutes)) || 30)
     entry.breakMinutes = Math.max(1, Math.min(15, Math.round(Number(entry.breakMinutes)) || 5))
     entry.longBreakMinutes = Math.max(1, Math.min(15, Math.round(Number(entry.longBreakMinutes)) || 15))
+    entry.sessionsBeforeLong = Math.max(1, Math.min(12, Math.round(Number(entry.sessionsBeforeLong)) || 4))
     entry.rewardSessions = Math.max(2, Math.round(Number(entry.rewardSessions)) || 2)
     entry.rewardMinutes = Math.max(5, Math.min(480, Math.round(Number(entry.rewardMinutes)) || 120))
     entry.dailyLimitMinutes = Math.max(5, Math.min(360, Math.round(Number(entry.dailyLimitMinutes)) || 180))
@@ -367,6 +368,7 @@ BarWidget {
     id: unblockTicker
     interval: 1000
     repeat: true
+    running: root.unblocked
     onTriggered: root.nowMs = Date.now()
   }
   onUnblockedUntilChanged: root.nowMs = Date.now()

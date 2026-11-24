@@ -28,7 +28,14 @@ number of completed focus sessions.
 
 ## Installation
 
-### 1. Install the plugin
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/stalss/timer-project.git
+cd timer-project
+```
+
+### 2. Install the plugin
 
 Copy the plugin files into your local Omarchy plugins directory:
 
@@ -44,7 +51,7 @@ Reload the shell so it picks up the new plugin:
 omarchy restart shell
 ```
 
-### 2. Add the widget to the bar
+### 3. Add the widget to the bar
 
 Add an entry for `larper.pomodoro` to the widgets list in
 `~/.config/omarchy/shell.json`, under `bar.widgets.start` (or `center` /
@@ -66,7 +73,7 @@ Add an entry for `larper.pomodoro` to the widgets list in
 
 Restart the shell again. The timer should now appear in the bar.
 
-### 3. (Optional) Set up the site-blocker reward
+### 4. (Optional) Set up the site-blocker reward
 
 The widget calls:
 
@@ -88,7 +95,7 @@ The widget reads `/var/lib/site-blocker/pause.json` to display the live
 countdown of the restriction-free window. Without site-blocker, the timer and
 settings panel still work; only the reward button/indicator is inactive.
 
-### 4. (Optional) Set up the daily screen-time counter
+### 5. (Optional) Set up the daily screen-time counter
 
 The panel displays time used today, read from:
 

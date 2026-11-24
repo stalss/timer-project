@@ -31,13 +31,13 @@ BarWidget {
 
   // ---- settings ----
 
-  readonly property int workMinutes: Math.max(30, Math.round(Number(setting("workMinutes", 30)) || 30))
+  readonly property int workMinutes: Math.max(30, Math.min(180, Math.round(Number(setting("workMinutes", 30)) || 30)))
   readonly property int breakMinutes: Math.max(1, Math.min(15, Math.round(Number(setting("breakMinutes", 5)) || 5)))
   readonly property int longBreakMinutes: Math.max(1, Math.min(15, Math.round(Number(setting("longBreakMinutes", 15)) || 15)))
-  readonly property int sessionsBeforeLong: Math.max(1, Math.round(Number(setting("sessionsBeforeLong", 4)) || 4))
+  readonly property int sessionsBeforeLong: Math.max(1, Math.min(12, Math.round(Number(setting("sessionsBeforeLong", 4)) || 4)))
   readonly property bool autoStartBreaks: setting("autoStartBreaks", true) === true
   readonly property bool autoStartFocus: setting("autoStartFocus", false) === true
-  readonly property int rewardSessions: Math.max(2, Math.round(Number(setting("rewardSessions", 4)) || 4))
+  readonly property int rewardSessions: Math.max(2, Math.min(20, Math.round(Number(setting("rewardSessions", 4)) || 4)))
   readonly property int rewardMinutes: Math.max(5, Math.min(480, Math.round(Number(setting("rewardMinutes", 120)) || 120)))
   readonly property int dailyLimitMinutes: Math.max(5, Math.min(360, Math.round(Number(setting("dailyLimitMinutes", 180)) || 180)))
 
@@ -45,7 +45,6 @@ BarWidget {
 
   // "focus" | "short" | "long"
   property string phase: "focus"
-  property int completed: 0
   property int remaining: phaseSeconds
   property bool running: false
   property double endAt: 0
@@ -74,6 +73,11 @@ BarWidget {
 
   function pause() {
     if (!running) return
+    // The deadline may pass between ticks; finish instead of sitting at 00:00.
+    if (endAt > 0 && Date.now() >= endAt) {
+      finish()
+      return
+    }
     remaining = Math.max(0, Math.ceil((endAt - Date.now()) / 1000))
     running = false
   }
@@ -100,16 +104,18 @@ BarWidget {
   function nextPhase(count) {
     running = false
     if (phase === "focus") {
-      if (count) {
-        completed += 1
-        recordSession()
-      }
-      phase = (count && completed % sessionsBeforeLong === 0) ? "long" : "short"
+      // Use the persisted daily count so the long-break cycle survives restarts.
+      if (count) recordSession()
+      phase = (count && dailyCompleted % sessionsBeforeLong === 0) ? "long" : "short"
       remaining = Qt.binding(function() { return root.phaseSeconds })
-      notify(phase === "long" ? "Focus complete: long break" : "Focus complete: break time",
-        phase === "long"
-          ? "Nice work. Step away for " + longBreakMinutes + " minutes."
-          : "Take " + breakMinutes + " minutes away from the screen.")
+      if (count) {
+        notify(phase === "long" ? "Focus complete: long break" : "Focus complete: break time",
+          phase === "long"
+            ? "Nice work. Step away for " + longBreakMinutes + " minutes."
+            : "Take " + breakMinutes + " minutes away from the screen.")
+      } else {
+        notify("Focus skipped", "Moving to " + (phase === "long" ? "a long break" : "a short break") + ".")
+      }
       if (autoStartBreaks) start()
     } else {
       phase = "focus"
@@ -136,9 +142,6 @@ BarWidget {
 
   property string dayKey: ""
   property int dailyCompleted: 0
-  // False until the state file has been read once; the clock's initial date
-  // assignment arrives before that and must not be treated as a day rollover.
-  property bool dailyLoaded: false
 
   // The blocker's reward window, published as a world-readable epoch
   // timestamp. Absent file (or a past one) means blocking is active.
@@ -178,14 +181,12 @@ BarWidget {
   function rollDay(date) {
     var key = dayKeyOf(date)
     if (key === root.dayKey) return
-    if (!root.dailyLoaded) {
-      // Startup: adopt the key and let the pending file read supply the count.
-      root.dayKey = key
-      return
-    }
+    var hadKey = root.dayKey !== ""
     root.dayKey = key
-    root.dailyCompleted = 0
-    persistDaily()
+    if (hadKey) {
+      root.dailyCompleted = 0
+      persistDaily()
+    }
   }
 
   // FileView emits an empty read while it is (re)loading, and a plugin reload
@@ -198,18 +199,17 @@ BarWidget {
     try { parsed = JSON.parse(text) } catch (e) { return }
     if (!parsed || typeof parsed !== "object") return
     var count = Number(parsed.completed)
-    var key = dayKeyOf(wall.date)
+    var key = dayKeyOf(new Date())
     root.dayKey = key
     root.dailyCompleted = parsed.date === key && Number.isFinite(count) && count > 0
       ? Math.floor(count) : 0
-    root.dailyLoaded = true
     if (parsed.date !== key) persistDaily()
   }
 
   // Clear today's count from the settings panel. An already-earned reward
   // window keeps running; only progress toward the next one is discarded.
   function resetDaily() {
-    root.dayKey = dayKeyOf(wall.date)
+    root.dayKey = dayKeyOf(new Date())
     root.dailyCompleted = 0
     persistDaily()
   }
@@ -222,7 +222,7 @@ BarWidget {
   // Every `rewardSessions`-th session of the day re-earns the window, so a
   // second run of four extends the unblock from that moment.
   function recordSession() {
-    rollDay(wall.date)
+    rollDay(new Date())
     dailyCompleted += 1
     persistDaily()
     if (dailyCompleted > 0 && dailyCompleted % rewardSessions === 0) grantReward()
@@ -255,7 +255,7 @@ BarWidget {
     entry.breakMinutes = Math.max(1, Math.min(15, Math.round(Number(entry.breakMinutes)) || 5))
     entry.longBreakMinutes = Math.max(1, Math.min(15, Math.round(Number(entry.longBreakMinutes)) || 15))
     entry.sessionsBeforeLong = Math.max(1, Math.min(12, Math.round(Number(entry.sessionsBeforeLong)) || 4))
-    entry.rewardSessions = Math.max(2, Math.round(Number(entry.rewardSessions)) || 2)
+    entry.rewardSessions = Math.max(2, Math.min(20, Math.round(Number(entry.rewardSessions)) || 4))
     entry.rewardMinutes = Math.max(5, Math.min(480, Math.round(Number(entry.rewardMinutes)) || 120))
     entry.dailyLimitMinutes = Math.max(5, Math.min(360, Math.round(Number(entry.dailyLimitMinutes)) || 180))
 
@@ -309,7 +309,7 @@ BarWidget {
   WallClock {
     id: wall
     step: 60000
-    onDateChanged: root.rollDay(wall.date)
+    onDateChanged: root.rollDay(new Date())
   }
 
   // Daily count. Watched so a session finished on another monitor's bar
@@ -321,7 +321,7 @@ BarWidget {
     atomicWrites: true
     printErrors: false
     onLoaded: root.loadDaily(text())
-    onLoadFailed: {}
+    onLoadFailed: root.rollDay(new Date())
     onFileChanged: reload()
   }
 

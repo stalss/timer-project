@@ -22,8 +22,8 @@ number of completed focus sessions.
 ## Requirements
 
 - Omarchy shell (Quickshell) with local plugin support
-- Optional: [`site-blocker`](https://github.com/) installed at
-  `/usr/local/bin/site-blocker` with passwordless `sudo` for `pause`/`resume`
+- Optional: `site-blocker` (included in [`site-blocker/`](site-blocker/)) installed
+  at `/usr/local/bin/site-blocker` with passwordless `sudo` for `pause`/`resume`
 - Optional: the `daily-screen-limit` user service (included in this guide)
 
 ## Installation
@@ -165,7 +165,7 @@ reset today's completed-session count.
 ### Reward behavior
 
 - Completed focus sessions are counted per day in
-  `~/.local/state/omarchy/pomodoro.json`.
+  `$XDG_STATE_HOME/omarchy/pomodoro.json` (default `~/.local/state/omarchy/pomodoro.json`).
 - Every `rewardSessions`-th session (minimum 2) runs the site-blocker pause
   command, granting a restriction-free window of `rewardMinutes`.
 - The panel shows the remaining time in the current window and has a button to

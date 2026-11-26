@@ -72,19 +72,7 @@ widget will show a "Focus reward failed" notification.
 - `resume` restores blocking immediately (panel button)
 - The heal timer restores an expired/missed pause after a reboot
 
-## Manual usage
-
-```bash
-sudo site-blocker update        # refresh lists + DNS setup
-sudo site-blocker apply         # rebuild from cached lists, no download
-sudo site-blocker pause 120     # unblock for 120 minutes
-sudo site-blocker resume        # restore blocking now
-sudo site-blocker paused        # show pause state
-sudo site-blocker status        # show block count + test domains
-sudo site-blocker allow DOMAIN  # allow a domain
-sudo site-blocker block DOMAIN  # block an extra domain
-sudo site-blocker uninstall     # remove everything and restore DNS
-```
+`
 
 ## Uninstall
 
